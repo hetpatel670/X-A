@@ -1,0 +1,2179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Twitter AI Agent - Intelligent Automation Platform</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ===== CSS RESET & BASE STYLES ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            font-size: 16px;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: var(--text-primary);
+            background: var(--bg-primary);
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* ===== CSS CUSTOM PROPERTIES ===== */
+        :root {
+            /* Colors */
+            --primary: #1DA1F2;
+            --primary-dark: #1991DB;
+            --primary-light: #4AB3F4;
+            --secondary: #8B5CF6;
+            --secondary-dark: #7C3AED;
+            --secondary-light: #A78BFA;
+            --accent: #F59E0B;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --error: #EF4444;
+            --info: #3B82F6;
+            
+            /* Background Colors */
+            --bg-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --bg-secondary: rgba(255, 255, 255, 0.1);
+            --bg-tertiary: rgba(255, 255, 255, 0.05);
+            --bg-card: rgba(255, 255, 255, 0.1);
+            --bg-glass: rgba(255, 255, 255, 0.15);
+            --bg-overlay: rgba(0, 0, 0, 0.5);
+            
+            /* Text Colors */
+            --text-primary: #FFFFFF;
+            --text-secondary: rgba(255, 255, 255, 0.8);
+            --text-tertiary: rgba(255, 255, 255, 0.6);
+            --text-muted: rgba(255, 255, 255, 0.4);
+            
+            /* Border Colors */
+            --border-primary: rgba(255, 255, 255, 0.2);
+            --border-secondary: rgba(255, 255, 255, 0.1);
+            --border-focus: var(--primary);
+            
+            /* Shadow */
+            --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
+            --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.2);
+            --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.25);
+            --shadow-glow: 0 0 20px rgba(29, 161, 242, 0.3);
+            
+            /* Spacing */
+            --space-xs: 0.25rem;
+            --space-sm: 0.5rem;
+            --space-md: 1rem;
+            --space-lg: 1.5rem;
+            --space-xl: 2rem;
+            --space-2xl: 3rem;
+            --space-3xl: 4rem;
+            
+            /* Border Radius */
+            --radius-sm: 0.375rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --radius-xl: 1rem;
+            --radius-2xl: 1.5rem;
+            --radius-full: 9999px;
+            
+            /* Typography */
+            --font-xs: 0.75rem;
+            --font-sm: 0.875rem;
+            --font-base: 1rem;
+            --font-lg: 1.125rem;
+            --font-xl: 1.25rem;
+            --font-2xl: 1.5rem;
+            --font-3xl: 1.875rem;
+            --font-4xl: 2.25rem;
+            
+            /* Layout */
+            --sidebar-width: 280px;
+            --sidebar-collapsed-width: 80px;
+            --header-height: 70px;
+            --container-max-width: 1400px;
+            
+            /* Transitions */
+            --transition-fast: 0.15s ease;
+            --transition-normal: 0.3s ease;
+            --transition-slow: 0.5s ease;
+            
+            /* Z-Index */
+            --z-dropdown: 1000;
+            --z-sticky: 1020;
+            --z-fixed: 1030;
+            --z-modal-backdrop: 1040;
+            --z-modal: 1050;
+            --z-popover: 1060;
+            --z-tooltip: 1070;
+            --z-toast: 1080;
+        }
+
+        /* ===== MAIN LAYOUT ===== */
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid var(--border-primary);
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100vh;
+            z-index: var(--z-fixed);
+            transition: transform var(--transition-normal);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar.collapsed {
+            width: var(--sidebar-collapsed-width);
+        }
+
+        .sidebar.mobile-hidden {
+            transform: translateX(-100%);
+        }
+
+        .sidebar-header {
+            padding: var(--space-lg);
+            border-bottom: 1px solid var(--border-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            min-height: var(--header-height);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            font-weight: 700;
+            font-size: var(--font-xl);
+            color: var(--text-primary);
+        }
+
+        .logo i {
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+
+        .sidebar-toggle {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: var(--font-lg);
+            cursor: pointer;
+            padding: var(--space-sm);
+            border-radius: var(--radius-md);
+            transition: all var(--transition-fast);
+        }
+
+        .sidebar-toggle:hover {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .sidebar-content {
+            flex: 1;
+            padding: var(--space-lg);
+            overflow-y: auto;
+        }
+
+        .nav-section {
+            margin-bottom: var(--space-xl);
+        }
+
+        .nav-section-title {
+            font-size: var(--font-xs);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-tertiary);
+            margin-bottom: var(--space-md);
+            padding: 0 var(--space-md);
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-item {
+            margin-bottom: var(--space-xs);
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            padding: var(--space-md);
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: var(--radius-lg);
+            transition: all var(--transition-fast);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-link:hover {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            transform: translateX(4px);
+        }
+
+        .nav-link.active {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            box-shadow: var(--shadow-glow);
+        }
+
+        .nav-link i {
+            font-size: var(--font-lg);
+            width: 20px;
+            text-align: center;
+        }
+
+        .sidebar-footer {
+            padding: var(--space-lg);
+            border-top: 1px solid var(--border-secondary);
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            padding: var(--space-md);
+            background: var(--bg-secondary);
+            border-radius: var(--radius-lg);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: var(--font-lg);
+        }
+
+        .user-info {
+            flex: 1;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: var(--font-sm);
+            color: var(--text-primary);
+        }
+
+        .user-status {
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+            font-size: var(--font-xs);
+            color: var(--text-tertiary);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: pulse 2s infinite;
+        }
+
+        /* ===== MAIN CONTENT ===== */
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            transition: margin-left var(--transition-normal);
+        }
+
+        .sidebar.collapsed + .main-content {
+            margin-left: var(--sidebar-collapsed-width);
+        }
+
+        /* ===== TOP HEADER ===== */
+        .top-header {
+            height: var(--header-height);
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-primary);
+            display: flex;
+            align-items: center;
+            padding: 0 var(--space-xl);
+            position: sticky;
+            top: 0;
+            z-index: var(--z-sticky);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: var(--space-lg);
+        }
+
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: var(--font-lg);
+            cursor: pointer;
+            padding: var(--space-sm);
+            border-radius: var(--radius-md);
+            transition: all var(--transition-fast);
+        }
+
+        .mobile-menu-toggle:hover {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .breadcrumb i {
+            color: var(--primary);
+        }
+
+        .header-center {
+            flex: 1;
+            max-width: 500px;
+            margin: 0 var(--space-xl);
+        }
+
+        .search-container {
+            position: relative;
+        }
+
+        .search-container i {
+            position: absolute;
+            left: var(--space-md);
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-tertiary);
+            font-size: var(--font-sm);
+        }
+
+        .search-input {
+            width: 100%;
+            padding: var(--space-md) var(--space-md) var(--space-md) 2.5rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-secondary);
+            border-radius: var(--radius-full);
+            color: var(--text-primary);
+            font-size: var(--font-sm);
+            transition: all var(--transition-fast);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: var(--bg-tertiary);
+            box-shadow: 0 0 0 3px rgba(29, 161, 242, 0.1);
+        }
+
+        .search-input::placeholder {
+            color: var(--text-tertiary);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+        }
+
+        .header-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: var(--font-lg);
+            cursor: pointer;
+            padding: var(--space-sm);
+            border-radius: var(--radius-md);
+            transition: all var(--transition-fast);
+            position: relative;
+        }
+
+        .header-btn:hover {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            background: var(--error);
+            color: white;
+            font-size: 10px;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: var(--radius-full);
+            min-width: 18px;
+            text-align: center;
+        }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+            padding: var(--space-sm) var(--space-md);
+            background: var(--bg-secondary);
+            border-radius: var(--radius-full);
+            font-size: var(--font-xs);
+            color: var(--text-secondary);
+        }
+
+        .connection-status .status-dot {
+            width: 6px;
+            height: 6px;
+        }
+
+        .connection-status .status-dot.connected {
+            background: var(--success);
+        }
+
+        .connection-status .status-dot.disconnected {
+            background: var(--error);
+        }
+
+        /* ===== SCREEN CONTAINER ===== */
+        .screen-container {
+            flex: 1;
+            padding: var(--space-xl);
+            overflow-y: auto;
+            position: relative;
+        }
+
+        /* ===== BUTTONS ===== */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-sm);
+            padding: var(--space-md) var(--space-lg);
+            font-size: var(--font-sm);
+            font-weight: 600;
+            text-decoration: none;
+            border: none;
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            position: relative;
+            overflow: hidden;
+            white-space: nowrap;
+            user-select: none;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, var(--secondary), var(--secondary-dark));
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, var(--secondary-dark), var(--secondary));
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success), #059669);
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-success:hover {
+            background: linear-gradient(135deg, #059669, var(--success));
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, var(--warning), #D97706);
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-warning:hover {
+            background: linear-gradient(135deg, #D97706, var(--warning));
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-error {
+            background: linear-gradient(135deg, var(--error), #DC2626);
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-error:hover {
+            background: linear-gradient(135deg, #DC2626, var(--error));
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* ===== CARDS ===== */
+        .card {
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-xl);
+            padding: var(--space-xl);
+            box-shadow: var(--shadow-md);
+            transition: all var(--transition-fast);
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--border-focus);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-lg);
+            padding-bottom: var(--space-lg);
+            border-bottom: 1px solid var(--border-secondary);
+        }
+
+        .card-title {
+            font-size: var(--font-xl);
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .card-subtitle {
+            font-size: var(--font-sm);
+            color: var(--text-secondary);
+            margin: var(--space-xs) 0 0 0;
+        }
+
+        .card-content {
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* ===== FORMS ===== */
+        .form-group {
+            margin-bottom: var(--space-lg);
+        }
+
+        .form-label {
+            display: block;
+            font-size: var(--font-sm);
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--space-sm);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: var(--space-md);
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-secondary);
+            border-radius: var(--radius-lg);
+            color: var(--text-primary);
+            font-size: var(--font-sm);
+            transition: all var(--transition-fast);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: var(--bg-tertiary);
+            box-shadow: 0 0 0 3px rgba(29, 161, 242, 0.1);
+        }
+
+        .form-input::placeholder {
+            color: var(--text-tertiary);
+        }
+
+        /* ===== TABS ===== */
+        .tab-container {
+            margin-bottom: var(--space-xl);
+        }
+
+        .tab-nav {
+            display: flex;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-lg);
+            padding: var(--space-xs);
+            margin-bottom: var(--space-lg);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: var(--space-md) var(--space-lg);
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: var(--font-sm);
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: var(--radius-md);
+            transition: all var(--transition-fast);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-sm);
+        }
+
+        .tab-btn:hover {
+            color: var(--text-primary);
+            background: var(--bg-tertiary);
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn var(--transition-normal);
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* ===== NOTIFICATIONS ===== */
+        .notification-container {
+            position: fixed;
+            top: var(--space-xl);
+            right: var(--space-xl);
+            z-index: var(--z-toast);
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-md);
+            max-width: 400px;
+        }
+
+        .notification {
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: flex-start;
+            gap: var(--space-md);
+            transform: translateX(100%);
+            transition: all var(--transition-normal);
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification-icon {
+            font-size: var(--font-lg);
+            margin-top: 2px;
+        }
+
+        .notification-content {
+            flex: 1;
+        }
+
+        .notification-title {
+            font-weight: 600;
+            margin-bottom: var(--space-xs);
+            color: var(--text-primary);
+        }
+
+        .notification-message {
+            font-size: var(--font-sm);
+            color: var(--text-secondary);
+        }
+
+        .notification-success {
+            border-left: 4px solid var(--success);
+        }
+
+        .notification-success .notification-icon {
+            color: var(--success);
+        }
+
+        .notification-error {
+            border-left: 4px solid var(--error);
+        }
+
+        .notification-error .notification-icon {
+            color: var(--error);
+        }
+
+        /* ===== BACKGROUND EFFECTS ===== */
+        .background-effects {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .gradient-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            opacity: 0.3;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .orb-1 {
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, var(--primary), transparent);
+            top: 10%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .orb-2 {
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, var(--secondary), transparent);
+            top: 60%;
+            right: 10%;
+            animation-delay: 2s;
+        }
+
+        .orb-3 {
+            width: 250px;
+            height: 250px;
+            background: radial-gradient(circle, var(--accent), transparent);
+            bottom: 20%;
+            left: 50%;
+            animation-delay: 4s;
+        }
+
+        /* ===== ANIMATIONS ===== */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* ===== RESPONSIVE DESIGN ===== */
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .mobile-menu-toggle {
+                display: block;
+            }
+            
+            .header-center {
+                margin: 0 var(--space-md);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .top-header {
+                padding: 0 var(--space-lg);
+            }
+            
+            .screen-container {
+                padding: var(--space-lg);
+            }
+            
+            .header-actions {
+                gap: var(--space-sm);
+            }
+            
+            .connection-status span {
+                display: none;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .sidebar-header {
+                padding: var(--space-md);
+            }
+            
+            .sidebar-content {
+                padding: var(--space-md);
+            }
+            
+            .top-header {
+                padding: 0 var(--space-md);
+            }
+            
+            .screen-container {
+                padding: var(--space-md);
+            }
+            
+            .header-center {
+                margin: 0 var(--space-sm);
+            }
+            
+            .search-input {
+                font-size: var(--font-xs);
+            }
+        }
+
+        /* ===== SCREEN SPECIFIC STYLES ===== */
+        .welcome-section {
+            text-align: center;
+            margin-bottom: var(--space-3xl);
+            padding: var(--space-3xl) 0;
+        }
+
+        .welcome-title {
+            font-size: var(--font-4xl);
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: var(--space-lg);
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .welcome-subtitle {
+            font-size: var(--font-xl);
+            color: var(--text-secondary);
+            margin-bottom: var(--space-2xl);
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--space-lg);
+            margin-bottom: var(--space-3xl);
+        }
+
+        .stat-card {
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-xl);
+            padding: var(--space-xl);
+            text-align: center;
+            transition: all var(--transition-fast);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-value {
+            font-size: var(--font-3xl);
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: var(--space-sm);
+        }
+
+        .stat-label {
+            font-size: var(--font-sm);
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--space-lg);
+            margin-bottom: var(--space-3xl);
+        }
+
+        .action-card {
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-xl);
+            padding: var(--space-xl);
+            text-align: center;
+            transition: all var(--transition-fast);
+            cursor: pointer;
+        }
+
+        .action-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary);
+        }
+
+        .action-icon {
+            font-size: var(--font-3xl);
+            color: var(--primary);
+            margin-bottom: var(--space-lg);
+        }
+
+        .action-title {
+            font-size: var(--font-lg);
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--space-sm);
+        }
+
+        .action-description {
+            font-size: var(--font-sm);
+            color: var(--text-secondary);
+            margin-bottom: var(--space-lg);
+        }
+
+        .system-status {
+            margin-bottom: var(--space-3xl);
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--space-lg);
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--space-lg);
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-lg);
+        }
+
+        .status-info {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+        }
+
+        .status-icon {
+            font-size: var(--font-lg);
+            color: var(--text-secondary);
+        }
+
+        .status-text {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .status-badge {
+            padding: var(--space-xs) var(--space-sm);
+            border-radius: var(--radius-full);
+            font-size: var(--font-xs);
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-operational {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+
+        .status-disconnected {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--error);
+        }
+
+        .status-disabled {
+            background: rgba(156, 163, 175, 0.2);
+            color: var(--text-tertiary);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: var(--space-3xl);
+            color: var(--text-secondary);
+        }
+
+        .empty-state i {
+            font-size: var(--font-4xl);
+            color: var(--text-tertiary);
+            margin-bottom: var(--space-lg);
+        }
+
+        .empty-state h3 {
+            font-size: var(--font-xl);
+            color: var(--text-primary);
+            margin-bottom: var(--space-md);
+        }
+
+        .empty-state p {
+            font-size: var(--font-sm);
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        /* ===== RESPONSIVE DESIGN - MOBILE FIRST ===== */
+        
+        /* Base styles are mobile-first */
+        
+        /* Small devices (landscape phones, 576px and up) */
+        @media (max-width: 576px) {
+            :root {
+                --sidebar-width: 100%;
+                --font-xs: 0.7rem;
+                --font-sm: 0.8rem;
+                --font-base: 0.9rem;
+                --font-lg: 1rem;
+                --font-xl: 1.1rem;
+                --font-2xl: 1.3rem;
+                --font-3xl: 1.6rem;
+                --font-4xl: 2rem;
+                --space-xs: 0.2rem;
+                --space-sm: 0.4rem;
+                --space-md: 0.8rem;
+                --space-lg: 1.2rem;
+                --space-xl: 1.6rem;
+                --space-2xl: 2.4rem;
+                --space-3xl: 3.2rem;
+            }
+
+            .sidebar {
+                transform: translateX(-100%);
+                z-index: 1000;
+            }
+
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .mobile-menu-toggle {
+                display: block !important;
+            }
+
+            .header-center {
+                display: none;
+            }
+
+            .welcome-title {
+                font-size: var(--font-3xl);
+                text-align: center;
+            }
+
+            .welcome-subtitle {
+                font-size: var(--font-lg);
+                text-align: center;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: var(--space-md);
+            }
+
+            .quick-actions {
+                grid-template-columns: 1fr;
+                gap: var(--space-md);
+            }
+
+            .status-grid {
+                grid-template-columns: 1fr;
+                gap: var(--space-md);
+            }
+
+            .btn {
+                padding: var(--space-md) var(--space-lg);
+                font-size: var(--font-sm);
+                min-height: 44px; /* Touch target size */
+            }
+
+            .form-input, .form-select {
+                padding: var(--space-md);
+                font-size: var(--font-base);
+                min-height: 44px; /* Touch target size */
+            }
+
+            .card {
+                padding: var(--space-lg);
+                margin-bottom: var(--space-lg);
+            }
+
+            .screen-container {
+                padding: var(--space-lg);
+            }
+
+            .tab-nav {
+                flex-direction: column;
+                gap: var(--space-xs);
+            }
+
+            .tab-btn {
+                width: 100%;
+                justify-content: center;
+                min-height: 44px;
+            }
+        }
+
+        /* Medium devices (tablets, 768px and up) */
+        @media (min-width: 577px) and (max-width: 1024px) {
+            .sidebar {
+                width: 240px;
+            }
+
+            .main-content {
+                margin-left: 240px;
+            }
+
+            .mobile-menu-toggle {
+                display: block;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .quick-actions {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Large devices (desktops, 1025px and up) */
+        @media (min-width: 1025px) {
+            .mobile-menu-toggle {
+                display: none;
+            }
+
+            .sidebar.collapsed {
+                width: var(--sidebar-collapsed-width);
+            }
+
+            .sidebar.collapsed + .main-content {
+                margin-left: var(--sidebar-collapsed-width);
+            }
+
+            .sidebar.collapsed .logo span,
+            .sidebar.collapsed .nav-link span,
+            .sidebar.collapsed .nav-section-title,
+            .sidebar.collapsed .user-info {
+                display: none;
+            }
+
+            .sidebar.collapsed .nav-link {
+                justify-content: center;
+                padding: var(--space-md);
+            }
+        }
+
+        /* Touch device optimizations */
+        @media (hover: none) and (pointer: coarse) {
+            .btn, .nav-link, .header-btn, .tab-btn {
+                min-height: 44px;
+                min-width: 44px;
+            }
+
+            .form-input, .form-select {
+                min-height: 44px;
+            }
+
+            /* Remove hover effects on touch devices */
+            .btn:hover,
+            .nav-link:hover,
+            .card:hover,
+            .action-card:hover {
+                transform: none;
+            }
+        }
+
+        /* High DPI displays */
+        @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+            .logo i,
+            .nav-link i,
+            .action-icon {
+                -webkit-font-smoothing: antialiased;
+                -moz-osx-font-smoothing: grayscale;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Effects -->
+    <div class="background-effects">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <!-- Notification Container -->
+    <div class="notification-container" id="notificationContainer"></div>
+
+    <!-- App Container -->
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="fas fa-robot"></i>
+                    <span>AI Agent</span>
+                </div>
+                <button class="sidebar-toggle" id="sidebarToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+
+            <div class="sidebar-content">
+                <nav class="nav-section">
+                    <h3 class="nav-section-title">Main</h3>
+                    <ul class="nav-menu">
+                        <li class="nav-item">
+                            <a href="#dashboard" class="nav-link active" data-screen="dashboard">
+                                <i class="fas fa-tachometer-alt"></i>
+                                <span>Dashboard</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#configuration" class="nav-link" data-screen="configuration">
+                                <i class="fas fa-cog"></i>
+                                <span>Configuration</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#automation" class="nav-link" data-screen="automation">
+                                <i class="fas fa-magic"></i>
+                                <span>Automation Hub</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+
+                <nav class="nav-section">
+                    <h3 class="nav-section-title">Monitoring</h3>
+                    <ul class="nav-menu">
+                        <li class="nav-item">
+                            <a href="#activities" class="nav-link" data-screen="activities">
+                                <i class="fas fa-list"></i>
+                                <span>Activity Log</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#analytics" class="nav-link" data-screen="analytics">
+                                <i class="fas fa-chart-line"></i>
+                                <span>Analytics</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+
+                <nav class="nav-section">
+                    <h3 class="nav-section-title">Support</h3>
+                    <ul class="nav-menu">
+                        <li class="nav-item">
+                            <a href="#help" class="nav-link" data-screen="help">
+                                <i class="fas fa-question-circle"></i>
+                                <span>Help & Support</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <div class="user-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="user-info">
+                        <div class="user-name">AI Agent User</div>
+                        <div class="user-status">
+                            <div class="status-dot online"></div>
+                            <span>Online</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Header -->
+            <header class="top-header">
+                <div class="header-left">
+                    <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div class="breadcrumb">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span id="breadcrumbText">Dashboard</span>
+                    </div>
+                </div>
+
+                <div class="header-center">
+                    <div class="search-container">
+                        <i class="fas fa-search"></i>
+                        <input type="text" class="search-input" placeholder="Search features, settings, or help...">
+                    </div>
+                </div>
+
+                <div class="header-right">
+                    <div class="header-actions">
+                        <button class="header-btn notification-btn">
+                            <i class="fas fa-bell"></i>
+                            <span class="notification-badge">3</span>
+                        </button>
+                        <div class="connection-status">
+                            <div class="status-dot disconnected"></div>
+                            <span>Disconnected</span>
+                        </div>
+                        <button class="header-btn">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Screen Container -->
+            <div class="screen-container">
+                <!-- Dashboard Screen -->
+                <div id="dashboard-screen" class="screen active">
+                    <!-- Welcome Section -->
+                    <section class="welcome-section">
+                        <h1 class="welcome-title">Welcome to Twitter AI Agent</h1>
+                        <p class="welcome-subtitle">Your intelligent automation companion for Twitter engagement and growth</p>
+                    </section>
+
+                    <!-- Stats Grid -->
+                    <section class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value">0</div>
+                            <div class="stat-label">Total Posts</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">0</div>
+                            <div class="stat-label">Total Replies</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">0%</div>
+                            <div class="stat-label">Success Rate</div>
+                        </div>
+                    </section>
+
+                    <!-- System Status -->
+                    <section class="system-status">
+                        <div class="card">
+                            <div class="card-header">
+                                <h2 class="card-title">System Status</h2>
+                            </div>
+                            <div class="status-grid">
+                                <div class="status-item">
+                                    <div class="status-info">
+                                        <i class="fas fa-server status-icon"></i>
+                                        <span class="status-text">All Systems</span>
+                                    </div>
+                                    <span class="status-badge status-operational">Operational</span>
+                                </div>
+                                <div class="status-item">
+                                    <div class="status-info">
+                                        <i class="fab fa-twitter status-icon"></i>
+                                        <span class="status-text">Twitter API</span>
+                                    </div>
+                                    <span class="status-badge status-disconnected">Disconnected</span>
+                                </div>
+                                <div class="status-item">
+                                    <div class="status-info">
+                                        <i class="fas fa-brain status-icon"></i>
+                                        <span class="status-text">AI Service</span>
+                                    </div>
+                                    <span class="status-badge status-disconnected">Disconnected</span>
+                                </div>
+                                <div class="status-item">
+                                    <div class="status-info">
+                                        <i class="fas fa-shield-alt status-icon"></i>
+                                        <span class="status-text">Authentication</span>
+                                    </div>
+                                    <span class="status-badge status-disconnected">Not Authenticated</span>
+                                </div>
+                                <div class="status-item">
+                                    <div class="status-info">
+                                        <i class="fas fa-robot status-icon"></i>
+                                        <span class="status-text">Auto Posting</span>
+                                    </div>
+                                    <span class="status-badge status-disabled">Disabled</span>
+                                </div>
+                                <div class="status-item">
+                                    <div class="status-info">
+                                        <i class="fas fa-reply status-icon"></i>
+                                        <span class="status-text">Auto Replies</span>
+                                    </div>
+                                    <span class="status-badge status-disabled">Disabled</span>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Quick Actions -->
+                    <section class="quick-actions">
+                        <div class="action-card" onclick="postNow()">
+                            <div class="action-icon">
+                                <i class="fas fa-paper-plane"></i>
+                            </div>
+                            <h3 class="action-title">Post Now</h3>
+                            <p class="action-description">Create and publish a new tweet instantly</p>
+                            <button class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i>
+                                Post Now
+                            </button>
+                        </div>
+
+                        <div class="action-card" onclick="replyNow()">
+                            <div class="action-icon">
+                                <i class="fas fa-reply"></i>
+                            </div>
+                            <h3 class="action-title">Reply Now</h3>
+                            <p class="action-description">Generate and send intelligent replies</p>
+                            <button class="btn btn-secondary">
+                                <i class="fas fa-reply"></i>
+                                Reply Now
+                            </button>
+                        </div>
+
+                        <div class="action-card" onclick="testConnection()">
+                            <div class="action-icon">
+                                <i class="fas fa-plug"></i>
+                            </div>
+                            <h3 class="action-title">Test Connection</h3>
+                            <p class="action-description">Verify Twitter API connectivity</p>
+                            <button class="btn btn-warning">
+                                <i class="fas fa-plug"></i>
+                                Test API
+                            </button>
+                        </div>
+
+                        <div class="action-card" onclick="showConfiguration()">
+                            <div class="action-icon">
+                                <i class="fas fa-cog"></i>
+                            </div>
+                            <h3 class="action-title">Configuration</h3>
+                            <p class="action-description">Set up API keys and preferences</p>
+                            <button class="btn btn-success">
+                                <i class="fas fa-cog"></i>
+                                Configure
+                            </button>
+                        </div>
+                    </section>
+
+                    <!-- Recent Activities -->
+                    <section class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Recent Activities</h2>
+                        </div>
+                        <div class="empty-state">
+                            <i class="fas fa-history"></i>
+                            <h3>No Recent Activities</h3>
+                            <p>Your automation activities will appear here once you start using the system.</p>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Configuration Screen -->
+                <div id="configuration-screen" class="screen" style="display: none;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Configuration</h2>
+                            <p class="card-subtitle">Set up your API connections and application preferences</p>
+                        </div>
+
+                        <!-- Tab Navigation -->
+                        <div class="tab-container">
+                            <div class="tab-nav">
+                                <button class="tab-btn active" data-tab="twitter-api">
+                                    <i class="fab fa-twitter"></i>
+                                    Twitter API
+                                </button>
+                                <button class="tab-btn" data-tab="ai-service">
+                                    <i class="fas fa-brain"></i>
+                                    AI Service
+                                </button>
+                                <button class="tab-btn" data-tab="application">
+                                    <i class="fas fa-cog"></i>
+                                    Application
+                                </button>
+                                <button class="tab-btn" data-tab="security">
+                                    <i class="fas fa-shield-alt"></i>
+                                    Security
+                                </button>
+                            </div>
+
+                            <!-- Twitter API Tab -->
+                            <div class="tab-content active" id="twitter-api-tab">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h3 class="card-title">Twitter API Credentials</h3>
+                                        <p class="card-subtitle">Configure your Twitter Developer API credentials to enable posting and reply automation</p>
+                                    </div>
+                                    <div class="card-content">
+                                        <div class="form-group">
+                                            <label class="form-label">Connection Status</label>
+                                            <div class="status-item">
+                                                <div class="status-info">
+                                                    <i class="fab fa-twitter status-icon"></i>
+                                                    <span class="status-text">Not Connected</span>
+                                                </div>
+                                                <span class="status-badge status-disconnected">Disconnected</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="form-label">API Key</label>
+                                            <input type="text" class="form-input" placeholder="Enter your Twitter API Key from the Developer Portal">
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="form-label">API Secret Key</label>
+                                            <input type="password" class="form-input" placeholder="Enter your Twitter API Secret Key from the Developer Portal">
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="form-label">Access Token</label>
+                                            <input type="text" class="form-input" placeholder="Enter your Twitter Access Token">
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="form-label">Access Token Secret</label>
+                                            <input type="password" class="form-input" placeholder="Enter your Twitter Access Token Secret">
+                                        </div>
+
+                                        <div class="form-group">
+                                            <button class="btn btn-primary">
+                                                <i class="fas fa-save"></i>
+                                                Save Configuration
+                                            </button>
+                                            <button class="btn btn-secondary" style="margin-left: 1rem;">
+                                                <i class="fas fa-plug"></i>
+                                                Test Connection
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- AI Service Tab -->
+                            <div class="tab-content" id="ai-service-tab">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h3 class="card-title">AI Service Configuration</h3>
+                                        <p class="card-subtitle">Configure AI service settings for content generation and automation</p>
+                                    </div>
+                                    <div class="card-content">
+                                        <div class="form-group">
+                                            <label class="form-label">AI Service Provider</label>
+                                            <select class="form-input" id="aiServiceProvider">
+                                                <option value="custom">Custom API</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="form-group" id="baseUrlGroup">
+                                            <label class="form-label">Base URL</label>
+                                            <input type="text" class="form-input" id="baseUrlInput" placeholder="Enter your custom API base URL (e.g., https://api.example.com/v1)">
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="form-label">API Key</label>
+                                            <input type="password" class="form-input" id="aiApiKeyInput" placeholder="Enter your AI service API key">
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="form-label">Model</label>
+                                            <input type="text" class="form-input" id="aiModelInput" placeholder="Enter model name (e.g., gpt-4, claude-3, custom-model)">
+                                        </div>
+
+                                        <div class="form-group">
+                                            <button class="btn btn-primary" onclick="saveAIConfiguration()">
+                                                <i class="fas fa-save"></i>
+                                                Save Configuration
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Application Tab -->
+                            <div class="tab-content" id="application-tab">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h3 class="card-title">Application Preferences</h3>
+                                        <p class="card-subtitle">Customize your application settings and preferences</p>
+                                    </div>
+                                    <div class="card-content">
+                                        <div class="form-group">
+                                            <label class="form-label">Theme</label>
+                                            <select class="form-input">
+                                                <option>Dark</option>
+                                                <option>Light</option>
+                                                <option>Auto</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="form-label">Notifications</label>
+                                            <div class="toggle-group">
+                                                <label class="toggle-switch">
+                                                    <input type="checkbox" checked>
+                                                    <span class="toggle-slider"></span>
+                                                </label>
+                                                <span>Enable desktop notifications</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <button class="btn btn-primary">
+                                                <i class="fas fa-save"></i>
+                                                Save Preferences
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Security Tab -->
+                            <div class="tab-content" id="security-tab">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h3 class="card-title">Security Settings</h3>
+                                        <p class="card-subtitle">Manage your security and privacy settings</p>
+                                    </div>
+                                    <div class="card-content">
+                                        <div class="form-group">
+                                            <label class="form-label">Auto-logout</label>
+                                            <select class="form-input">
+                                                <option>Never</option>
+                                                <option>15 minutes</option>
+                                                <option>30 minutes</option>
+                                                <option>1 hour</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="form-label">Data Encryption</label>
+                                            <div class="toggle-group">
+                                                <label class="toggle-switch">
+                                                    <input type="checkbox" checked>
+                                                    <span class="toggle-slider"></span>
+                                                </label>
+                                                <span>Encrypt stored credentials</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <button class="btn btn-primary">
+                                                <i class="fas fa-save"></i>
+                                                Save Security Settings
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Automation Hub Screen -->
+                <div id="automation-screen" class="screen" style="display: none;">
+                    <div class="empty-state">
+                        <i class="fas fa-magic"></i>
+                        <h3>Automation Hub</h3>
+                        <p>Advanced automation features and scheduling will be available here.</p>
+                    </div>
+                </div>
+
+                <!-- Activity Log Screen -->
+                <div id="activities-screen" class="screen" style="display: none;">
+                    <div class="empty-state">
+                        <i class="fas fa-list"></i>
+                        <h3>Activity Log</h3>
+                        <p>Your automation activities will appear here.</p>
+                    </div>
+                </div>
+
+                <!-- Analytics Screen -->
+                <div id="analytics-screen" class="screen" style="display: none;">
+                    <div class="empty-state">
+                        <i class="fas fa-chart-line"></i>
+                        <h3>Analytics</h3>
+                        <p>Performance analytics and insights coming soon.</p>
+                    </div>
+                </div>
+
+                <!-- Help & Support Screen -->
+                <div id="help-screen" class="screen" style="display: none;">
+                    <div class="empty-state">
+                        <i class="fas fa-question-circle"></i>
+                        <h3>Help & Support</h3>
+                        <p>Documentation and support resources coming soon.</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Application State
+        let currentScreen = 'dashboard';
+        let sidebarCollapsed = false;
+        let mobileMenuOpen = false;
+
+        // DOM Elements
+        const sidebar = document.getElementById('sidebar');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+        const breadcrumbText = document.getElementById('breadcrumbText');
+        const notificationContainer = document.getElementById('notificationContainer');
+
+        // Initialize Application
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeNavigation();
+            initializeTabs();
+            initializeEventListeners();
+            updateConnectionStatus();
+        });
+
+        // Navigation System
+        function initializeNavigation() {
+            const navLinks = document.querySelectorAll('.nav-link');
+            
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const screen = this.getAttribute('data-screen');
+                    if (screen) {
+                        navigateToScreen(screen);
+                    }
+                });
+            });
+        }
+
+        function navigateToScreen(screenName) {
+            // Hide all screens
+            const screens = document.querySelectorAll('.screen');
+            screens.forEach(screen => {
+                screen.style.display = 'none';
+            });
+
+            // Show target screen
+            const targetScreen = document.getElementById(screenName + '-screen');
+            if (targetScreen) {
+                targetScreen.style.display = 'block';
+                currentScreen = screenName;
+            }
+
+            // Update navigation
+            updateNavigation(screenName);
+            updateBreadcrumb(screenName);
+
+            // Close mobile menu if open
+            if (window.innerWidth <= 1024) {
+                sidebar.classList.remove('mobile-open');
+                mobileMenuOpen = false;
+            }
+        }
+
+        function updateNavigation(activeScreen) {
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('data-screen') === activeScreen) {
+                    link.classList.add('active');
+                }
+            });
+        }
+
+        function updateBreadcrumb(screenName) {
+            const breadcrumbMap = {
+                'dashboard': { icon: 'fas fa-tachometer-alt', text: 'Dashboard' },
+                'configuration': { icon: 'fas fa-cog', text: 'Configuration' },
+                'automation': { icon: 'fas fa-magic', text: 'Automation Hub' },
+                'activities': { icon: 'fas fa-list', text: 'Activity Log' },
+                'analytics': { icon: 'fas fa-chart-line', text: 'Analytics' },
+                'help': { icon: 'fas fa-question-circle', text: 'Help & Support' }
+            };
+
+            const breadcrumb = breadcrumbMap[screenName];
+            if (breadcrumb) {
+                const breadcrumbElement = document.querySelector('.breadcrumb');
+                breadcrumbElement.innerHTML = `
+                    <i class="${breadcrumb.icon}"></i>
+                    <span>${breadcrumb.text}</span>
+                `;
+            }
+        }
+
+        // Tab System
+        function initializeTabs() {
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            
+            tabButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    switchTab(tabId);
+                });
+            });
+        }
+
+        function switchTab(tabId) {
+            // Update tab buttons
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            tabButtons.forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('data-tab') === tabId) {
+                    btn.classList.add('active');
+                }
+            });
+
+            // Update tab content
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(content => {
+                content.classList.remove('active');
+            });
+
+            const targetTab = document.getElementById(tabId + '-tab');
+            if (targetTab) {
+                targetTab.classList.add('active');
+            }
+        }
+
+        // Event Listeners
+        function initializeEventListeners() {
+            // Sidebar toggle
+            sidebarToggle.addEventListener('click', function() {
+                sidebar.classList.toggle('collapsed');
+                sidebarCollapsed = !sidebarCollapsed;
+            });
+
+            // Mobile menu toggle
+            mobileMenuToggle.addEventListener('click', function() {
+                sidebar.classList.toggle('mobile-open');
+                mobileMenuOpen = !mobileMenuOpen;
+            });
+
+            // Close mobile menu when clicking outside
+            document.addEventListener('click', function(e) {
+                if (mobileMenuOpen && !sidebar.contains(e.target) && !mobileMenuToggle.contains(e.target)) {
+                    sidebar.classList.remove('mobile-open');
+                    mobileMenuOpen = false;
+                }
+            });
+
+            // Close mobile menu on window resize
+            window.addEventListener('resize', function() {
+                if (window.innerWidth > 1024) {
+                    sidebar.classList.remove('mobile-open');
+                    mobileMenuOpen = false;
+                }
+            });
+
+            // Touch swipe to close mobile menu
+            let touchStartX = 0;
+            let touchEndX = 0;
+
+            sidebar.addEventListener('touchstart', function(e) {
+                touchStartX = e.changedTouches[0].screenX;
+            });
+
+            sidebar.addEventListener('touchend', function(e) {
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipe();
+            });
+
+            function handleSwipe() {
+                if (touchEndX < touchStartX - 50 && mobileMenuOpen) {
+                    sidebar.classList.remove('mobile-open');
+                    mobileMenuOpen = false;
+                }
+            }
+        }
+
+        // API Functions
+        async function postNow() {
+            try {
+                showNotification('Posting...', 'Attempting to create a new post', 'info');
+                
+                const response = await fetch('/api/post', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        action: 'post'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showNotification('Success!', data.message || 'Post created successfully', 'success');
+                } else {
+                    showNotification('Error', data.error || 'Failed to create post', 'error');
+                }
+            } catch (error) {
+                console.error('Post error:', error);
+                showNotification('Error', 'Network error occurred', 'error');
+            }
+        }
+
+        async function replyNow() {
+            try {
+                showNotification('Replying...', 'Attempting to send a reply', 'info');
+                
+                const response = await fetch('/api/reply', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        action: 'reply'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showNotification('Success!', data.message || 'Reply sent successfully', 'success');
+                } else {
+                    showNotification('Error', data.error || 'Failed to send reply', 'error');
+                }
+            } catch (error) {
+                console.error('Reply error:', error);
+                showNotification('Error', 'Network error occurred', 'error');
+            }
+        }
+
+        async function testConnection() {
+            try {
+                showNotification('Testing...', 'Testing API connection', 'info');
+                
+                const response = await fetch('/api/test', {
+                    method: 'GET'
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showNotification('Success!', data.message || 'Connection test successful', 'success');
+                } else {
+                    showNotification('Error', data.error || 'Connection test failed', 'error');
+                }
+            } catch (error) {
+                console.error('Test error:', error);
+                showNotification('Error', 'Network error occurred', 'error');
+            }
+        }
+
+        async function saveAIConfiguration() {
+            try {
+                const baseUrl = document.getElementById('baseUrlInput').value;
+                const apiKey = document.getElementById('aiApiKeyInput').value;
+                const model = document.getElementById('aiModelInput').value;
+
+                if (!baseUrl || !apiKey || !model) {
+                    showNotification('Error', 'Please fill in all required fields', 'error');
+                    return;
+                }
+
+                showNotification('Saving...', 'Saving AI configuration', 'info');
+                
+                const response = await fetch('/api/config/ai', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        provider: 'custom',
+                        baseUrl: baseUrl,
+                        apiKey: apiKey,
+                        model: model
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showNotification('Success!', 'AI configuration saved successfully', 'success');
+                } else {
+                    showNotification('Error', data.error || 'Failed to save configuration', 'error');
+                }
+            } catch (error) {
+                console.error('Save AI config error:', error);
+                showNotification('Error', 'Network error occurred', 'error');
+            }
+        }
+
+        function showConfiguration() {
+            navigateToScreen('configuration');
+        }
+
+        // Notification System
+        function showNotification(title, message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            
+            const iconMap = {
+                'success': 'fas fa-check-circle',
+                'error': 'fas fa-exclamation-circle',
+                'warning': 'fas fa-exclamation-triangle',
+                'info': 'fas fa-info-circle'
+            };
+
+            notification.innerHTML = `
+                <div class="notification-icon">
+                    <i class="${iconMap[type] || iconMap.info}"></i>
+                </div>
+                <div class="notification-content">
+                    <div class="notification-title">${title}</div>
+                    <div class="notification-message">${message}</div>
+                </div>
+            `;
+
+            notificationContainer.appendChild(notification);
+
+            // Show notification
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 5000);
+        }
+
+        // Connection Status
+        function updateConnectionStatus() {
+            // This would typically check actual connection status
+            const connectionStatus = document.querySelector('.connection-status');
+            const statusDot = connectionStatus.querySelector('.status-dot');
+            const statusText = connectionStatus.querySelector('span');
+            
+            // Simulate checking connection
+            setTimeout(() => {
+                statusDot.className = 'status-dot disconnected';
+                statusText.textContent = 'Disconnected';
+            }, 1000);
+        }
+
+        // Utility Functions
+        function formatDate(date) {
+            return new Intl.DateTimeFormat('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            }).format(date);
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // Error Handling
+        window.addEventListener('error', function(e) {
+            console.error('Application error:', e.error);
+            showNotification('Application Error', 'An unexpected error occurred', 'error');
+        });
+
+        // Service Worker Registration (if needed)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                // Service worker registration would go here
+            });
+        }
+    </script>
+</body>
+</html>
+
